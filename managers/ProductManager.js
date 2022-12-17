@@ -5,35 +5,37 @@ class ProductManager {
         this.products = [];
     }
 
-    addProduct(title, description, price, thumbnail, code, stock) {
+    addProduct( title, description, code, price, status=true, stock, category, thumbnail ) {
             const newProduct = {
                 id: this.#getMaxId() + 1,
                 title,
                 description,
-                price,
-                thumbnail,
                 code,
-                stock
+                price,
+                status,
+                stock,
+                category,
+                thumbnail              
             };
             const productsValues = Object.values(newProduct);
             const productCode = this.#getProductCode(newProduct.code);
             if (productsValues.includes(undefined)) {       
-                console.error('Es obligatorio usar todos los campos');
+                console.error('Empty field');
             } else if (productCode) {     
-                console.error('Producto repetido')
+                console.error('The product already exists');
             } else {
-                if (fs.existsSync('Products.json')) {
+                if (fs.existsSync('./db/Products.json')) {
                     this.#readProducts();
                     this.products.push(newProduct);
                 } else { 
                     this.products.push(newProduct);
                 }
-                fs.writeFileSync('Products.json', JSON.stringify(this.products));
+                fs.writeFileSync('./db/Products.json', JSON.stringify(this.products));
             }
     }
 
     getProducts() {
-        if (fs.existsSync('Products.json')) {
+        if (fs.existsSync('./db/Products.json')) {
             this.#readProducts()
             //console.log(this.products);
             return this.products;
@@ -50,21 +52,23 @@ class ProductManager {
                 productFound = product;
             }
         })
-        productFound ? console.log('This is the product: ', productFound) : console.log("Not found");
+        //productFound ? console.log('This is the product: ', productFound) : console.log("Not found");
         return productFound;
     }
 
-    updateProduct(id, newTitle, newDescription, newPrice, newThumbnail, newCode, newStock){
+    updateProduct( id, newTitle, newDescription, newCode, newPrice, newStatus, newStock, newCategory, newThumbnail ){
         this.products.forEach((product) => {
             if (product.id === id) {
                 product.title = newTitle;
                 product.description = newDescription;
-                product.price = newPrice;
-                product.thumbnail = newThumbnail;
                 product.code = newCode;
+                product.price = newPrice;
+                product.status = newStatus;
                 product.stock = newStock;
-                console.log(this.products);
-                fs.writeFileSync('Products.json', JSON.stringify(this.products))
+                product.newCategory = newCategory;
+                product.thumbnail = newThumbnail;                
+                //console.log(this.products);
+                fs.writeFileSync('./db/Products.json', JSON.stringify(this.products))
             }
         })
     }
@@ -77,12 +81,12 @@ class ProductManager {
         } else {
             console.log('Fail to delete. Product not found-')
         }
-        fs.writeFileSync('Products.json', JSON.stringify(this.products));
+        fs.writeFileSync('./db/Products.json', JSON.stringify(this.products));
     }
 
 
     #readProducts() {
-        const products = JSON.parse(fs.readFileSync('Products.json', 'utf-8'));
+        const products = JSON.parse(fs.readFileSync('./db/Products.json', 'utf-8'));
         this.products = products;
     }
 
@@ -94,7 +98,7 @@ class ProductManager {
         return maxId;
     }
     #getProductCode(codeProduct) {
-        return this.products.find((product) => product.code === codeProduct);
+        return this.products.find((product) => product.code === codeProduct);   
     }
 }
 
@@ -105,6 +109,9 @@ const productManager = new ProductManager();
 //     productManager.addProduct(`producto prueba ${index}`, `Este es un producto prueba`, 200, `Sin imagen`, `abc12${index}`, 25);
 // }
 
-const exportProducts = productManager.getProducts();
+//const exportProducts = productManager.getProducts();
+//Function otra() = productManager.addProduct();
+//const otra = "hola";
 
-export default exportProducts;
+
+export { productManager };
